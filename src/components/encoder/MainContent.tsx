@@ -12,15 +12,8 @@ interface MainContentProps {
 }
 
 export const MainContent: React.FC<MainContentProps> = ({ activeTab, setActiveTab, theme }) => {
-  const [inputText, setInputText] = useState('');
-  const [outputText, setOutputText] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleProcess = useCallback(async () => {
-    setIsProcessing(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setIsProcessing(false);
-  }, []);
+
 
   const tabs = [
     { id: 'encode', label: '🔒 Encode', color: 'from-blue-500 to-blue-700', glowColor: 'shadow-blue-500/50' },
@@ -29,52 +22,21 @@ export const MainContent: React.FC<MainContentProps> = ({ activeTab, setActiveTa
     { id: 'steganography', label: '👁️ Steganography', color: 'from-cyan-500 to-cyan-700', glowColor: 'shadow-cyan-500/50' },
   ] as const;
 
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case 'encode':
-        return <EncodeTab 
-          inputText={inputText} 
-          setInputText={setInputText}
-          outputText={outputText} 
-          setOutputText={setOutputText}
-          isProcessing={isProcessing}
-          onProcess={handleProcess}
-          theme={theme}
-        />;
-      case 'decode':
-        return <DecodeTab 
-          inputText={inputText} 
-          setInputText={setInputText}
-          outputText={outputText} 
-          setOutputText={setOutputText}
-          isProcessing={isProcessing}
-          onProcess={handleProcess}
-          theme={theme}
-        />;
-      case 'analyze':
-        return <AnalyzeTab 
-          inputText={inputText} 
-          setInputText={setInputText}
-          outputText={outputText} 
-          setOutputText={setOutputText}
-          isProcessing={isProcessing}
-          onProcess={handleProcess}
-          theme={theme}
-        />;
-      case 'steganography':
-        return <SteganographyTab 
-          inputText={inputText} 
-          setInputText={setInputText}
-          outputText={outputText} 
-          setOutputText={setOutputText}
-          isProcessing={isProcessing}
-          onProcess={handleProcess}
-          theme={theme}
-        />;
-      default:
-        return null;
-    }
-  };
+const renderTabContent = () => {
+  switch (activeTab) {
+    case 'encode':
+      // Truyền ít props hơn, để EncodeTab tự quản lý state của nó
+      return <EncodeTab theme={theme} />;
+    case 'decode':
+      return <DecodeTab theme={theme} />;
+    case 'analyze':
+      return <AnalyzeTab theme={theme} />;
+    case 'steganography':
+      return <SteganographyTab theme={theme} />;
+    default:
+      return null;
+  }
+};
 
   const getActiveTabGlow = () => {
     switch (activeTab) {
