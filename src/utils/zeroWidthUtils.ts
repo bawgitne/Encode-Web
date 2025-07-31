@@ -1,202 +1,119 @@
-const ZERO_WIDTH_JOINER = '‍';      // nhị phân 1
-const ZERO_WIDTH_NON_JOINER = '‌';   // nhị phân 0
-const ZERO_WIDTH_SPACE = '​';       // dấu phân cách
+// --- Các hằng số Zero-Width ---
+const BIT_1 = '‍'; // Zero Width Joiner      (tượng trưng cho số 1)
+const BIT_0 = '‌'; // Zero Width Non-Joiner  (tượng trưng cho số 0)
+const DELIMITER = '​'; // Zero Width Space       (dấu hiệu kết thúc tin nhắn)
 
-// Simple character list for mapping (đảm bảo nó khớp với bản gốc của bạn)
-const simpleCharList = [
-  // Chữ cái tiếng Việt (thường và hoa)
-  'a', 'á', 'à', 'ả', 'ã', 'ạ', 'ă', 'ằ', 'ắ', 'ẳ', 'ẵ', 'ặ', 'â', 'ầ', 'ấ', 'ẩ', 'ẫ', 'ậ',
-  'b', 'c', 'd', 'đ',
-  'e', 'é', 'è', 'ẻ', 'ẽ', 'ẹ', 'ê', 'ề', 'ế', 'ể', 'ễ', 'ệ',
-  'g', 'h', 'i', 'í', 'ì', 'ỉ', 'ĩ', 'ị',
-  'k', 'l', 'm', 'n',
-  'o', 'ó', 'ò', 'ỏ', 'õ', 'ọ', 'ô', 'ồ', 'ố', 'ổ', 'ỗ', 'ộ', 'ơ', 'ờ', 'ớ', 'ở', 'ỡ', 'ợ',
-  'p', 'q', 'r', 's', 't',
-  'u', 'ú', 'ù', 'ủ', 'ũ', 'ụ', 'ư', 'ừ', 'ứ', 'ử', 'ữ', 'ự',
-  'v', 'x', 'y', 'ý', 'ỳ', 'ỷ', 'ỹ', 'ỵ',
-
-  'A', 'Á', 'À', 'Ả', 'Ã', 'Ạ', 'Ă', 'Ằ', 'Ắ', 'Ẳ', 'Ẵ', 'Ặ', 'Â', 'Ầ', 'Ấ', 'Ẩ', 'Ẫ', 'Ậ',
-  'B', 'C', 'D', 'Đ',
-  'E', 'É', 'È', 'Ẻ', 'Ẽ', 'Ẹ', 'Ê', 'Ề', 'Ế', 'Ể', 'Ễ', 'Ệ',
-  'G', 'H', 'I', 'Í', 'Ì', 'Ỉ', 'Ĩ', 'Ị',
-  'K', 'L', 'M', 'N',
-  'O', 'Ó', 'Ò', 'Ỏ', 'Õ', 'Ọ', 'Ô', 'Ồ', 'Ố', 'Ổ', 'Ỗ', 'Ộ', 'Ơ', 'Ờ', 'Ớ', 'Ở', 'Ỡ', 'Ợ',
-  'P', 'Q', 'R', 'S', 'T',
-  'U', 'Ú', 'Ù', 'Ủ', 'Ũ', 'Ụ', 'Ư', 'Ừ', 'Ứ', 'Ử', 'Ữ', 'Ự',
-  'V', 'X', 'Y', 'Ý', 'Ỳ', 'Ỷ', 'Ỹ', 'Ỵ',
-
-  // Các chữ cái tiếng Anh còn lại (không có trong bộ tiếng Việt dấu)
-  'f', 'j', 'w', 'z',
-  'F', 'J', 'W', 'Z',
-
-  // Số
-  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-
-  // Ký tự đặc biệt và dấu câu phổ biến
-  ' ', '.', ',', '!', '?', ';', ':', '-', '_', '(', ')', '[', ']', '{', '}',
-  '/', '\\', '|', '@', '#', '$', '%', '^', '&', '*', '+', '=', '<', '>',
-  '\'', '"', '`', '~', '°', '€', '£', '¥', '§', '©', '®', '™', '…',
-  '‘', '’', '“', '”', '«', '»', '—', '–'
-];
-
-// ---
-// ✅ Mã hóa an toàn Unicode với chế độ Simple tùy chọn
-// Hàm này vẫn ổn, chỉ để tham khảo để thấy cách Simple Mode hoạt động
-export const encodeZeroWidth = (text: string, simpleMode = false): string => {
-  if (simpleMode) {
-    return text
-      .split('')
-      .map(char => {
-        const index = simpleCharList.indexOf(char);
-        if (index === -1) return ''; // Bỏ qua nếu không tìm thấy
-        // Simple Mode dùng ZERO_WIDTH_JOINER lặp lại
-        return ZERO_WIDTH_JOINER.repeat(index + 1);
-      })
-      .filter(Boolean)
-      .join(' '); // Và khoảng trắng thông thường làm dấu phân cách
-  }
-
+/**
+ * ⚙️ MÃ HÓA VĂN BẢN (ENCODE)
+ * Chuyển đổi một chuỗi văn bản bất kỳ thành chuỗi ký tự zero-width.
+ * Phương pháp này luôn sử dụng chuẩn UTF-8 để đảm bảo tính toàn vẹn.
+ *
+ * @param {string} text - Văn bản gốc cần ẩn.
+ * @returns {string} - Chuỗi zero-width đã mã hóa.
+ */
+export const encode = (text: string): string => {
+  // 1. Chuyển văn bản thành các byte UTF-8.
   const utf8Bytes = new TextEncoder().encode(text);
-  const binary = Array.from(utf8Bytes)
+
+  // 2. Chuyển từng byte thành chuỗi nhị phân 8-bit.
+  const binaryString = Array.from(utf8Bytes)
     .map(byte => byte.toString(2).padStart(8, '0'))
     .join('');
 
-  const encoded = binary
+  // 3. Chuyển chuỗi nhị phân thành các ký tự zero-width.
+  const encodedData = binaryString
     .split('')
-    .map(bit => bit === '1' ? ZERO_WIDTH_JOINER : ZERO_WIDTH_NON_JOINER)
+    .map(bit => (bit === '1' ? BIT_1 : BIT_0))
     .join('');
 
-  return encoded + ZERO_WIDTH_SPACE; // Normal Mode dùng ZERO_WIDTH_SPACE làm dấu phân cách cuối chuỗi
+  // 4. Thêm dấu phân cách vào cuối để nhận biết điểm kết thúc.
+  return encodedData + DELIMITER;
 };
 
+/**
+ * ⚙️ GIẢI MÃ VĂN BẢN (DECODE)
+ * Chuyển đổi một chuỗi zero-width trở lại văn bản gốc.
+ * Tự động tìm kiếm tin nhắn ẩn được mã hóa bằng hàm encode.
+ *
+ * @param {string} textWithHiddenMessage - Văn bản chứa tin nhắn ẩn.
+ * @returns {string} - Tin nhắn gốc đã được giải mã, hoặc chuỗi rỗng nếu không tìm thấy.
+ */
+export const decode = (textWithHiddenMessage: string): string => {
+  // 1. Tìm vị trí của dấu phân cách để xác định dữ liệu ẩn.
+  const delimiterIndex = textWithHiddenMessage.indexOf(DELIMITER);
+  if (delimiterIndex === -1) {
+    return ''; // Không tìm thấy dấu hiệu của tin nhắn ẩn.
+  }
 
+  const encodedData = textWithHiddenMessage.substring(0, delimiterIndex);
 
-// ✅ Giải mã an toàn Unicode, tự động phát hiện chế độ
-export const decodeZeroWidth = (text: string): string => {
-  const delimiterIndex = text.indexOf(ZERO_WIDTH_SPACE);
+  // 2. Chuyển các ký tự zero-width trở lại thành chuỗi nhị phân.
+  const binaryString = [...encodedData] // Dùng spread `...` để duyệt ký tự Unicode chính xác
+    .map(char => {
+      if (char === BIT_1) return '1';
+      if (char === BIT_0) return '0';
+      return ''; // Bỏ qua các ký tự không liên quan khác.
+    })
+    .join('');
+  
+  // Dữ liệu phải là một bội số của 8.
+  if (!binaryString || binaryString.length % 8 !== 0) {
+    return ''; // Dữ liệu không hợp lệ hoặc đã bị hỏng.
+  }
 
-  // Nếu tìm thấy dấu phân cách (dấu hiệu của Normal Mode)
-  if (delimiterIndex !== -1) {
-    const potentialNormalEncodedPart = text.substring(0, delimiterIndex);
-    const relevantZeroWidthRegexForNormal = new RegExp(`[${ZERO_WIDTH_JOINER}${ZERO_WIDTH_NON_JOINER}]`, 'g');
-    const normalModeMatches = potentialNormalEncodedPart.match(relevantZeroWidthRegexForNormal);
+  // 3. Chuyển chuỗi nhị phân thành các byte.
+  const bytes: number[] = [];
+  for (let i = 0; i < binaryString.length; i += 8) {
+    bytes.push(parseInt(binaryString.slice(i, i + 8), 2));
+  }
 
-    if (normalModeMatches && normalModeMatches.length > 0) {
-      // Logic giải mã Normal Mode (phần này đã được sửa lỗi trước đó và vẫn chính xác)
-      const binary = normalModeMatches
-        .map(char => (char === ZERO_WIDTH_JOINER ? '1' : '0'))
-        .join('');
-
-      const bytes: number[] = [];
-      for (let i = 0; i < binary.length; i += 8) {
-        const byte = binary.slice(i, i + 8);
-        if (byte.length === 8) {
-          bytes.push(parseInt(byte, 2));
-        }
-      }
-      try {
-        return new TextDecoder().decode(new Uint8Array(bytes));
-      } catch (e) {
-        console.error("Lỗi giải mã tin nhắn chế độ normal:", e);
-        return '';
-      }
-    }
-    return ''; // Dấu phân cách có nhưng không có dữ liệu hợp lệ
-  } else {
-    // Nếu không tìm thấy dấu phân cách, giả định là Simple Mode.
-    const containsZeroWidthJoiner = text.includes(ZERO_WIDTH_JOINER);
-    if (!containsZeroWidthJoiner) {
-      return ''; // Không có ZWJ nào, nên không phải tin nhắn Simple Mode
-    }
-
-    // Luồng giải mã Simple Mode
-    return text
-      .trim()
-      .split(' ') // Tách theo khoảng trắng thông thường
-      .map(group => {
-        // *** ĐÃ SỬA LỖI Ở ĐÂY: Đếm ZERO_WIDTH_JOINER chứ không phải ZERO_WIDTH_SPACE ***
-        const count = [...group].filter(c => c === ZERO_WIDTH_JOINER).length;
-        return simpleCharList[count - 1] || '';
-      })
-      .join('');
+  // 4. Giải mã các byte UTF-8 để lấy lại văn bản gốc.
+  try {
+    return new TextDecoder().decode(new Uint8Array(bytes));
+  } catch (e) {
+    console.error("Lỗi khi giải mã UTF-8:", e);
+    return '';
   }
 };
 
+/**
+ * 📊 PHÂN TÍCH VĂN BẢN VÀ THỬ GIẢI MÃ
+ * Phân tích sự hiện diện của các ký tự zero-width và cố gắng giải mã chúng.
+ *
+ * @param {string} text - Văn bản cần phân tích.
+ * @returns {string} - Báo cáo phân tích và kết quả giải mã (nếu có).
+ */
+export const analyzeAndDecode = (text: string): string => {
+  const hiddenChars = [...text].filter(c => [BIT_1, BIT_0, DELIMITER].includes(c));
+  
+  let result = `📊 Kết quả phân tích:\n`;
+  result += `   - Tổng số ký tự: ${text.length}\n`;
+  result += `   - Số ký tự ẩn phát hiện: ${hiddenChars.length}\n`;
 
-
-// 📊 Phân tích văn bản + Thử giải mã (không thay đổi)
-export const analyzeZeroWidth = (text: string): string => {
-  const zeroWidthChars = {
-    '​': 'Zero Width Space',
-    '‌': 'Zero Width Non-Joiner',
-    '‍': 'Zero Width Joiner',
-    '': 'Zero Width No-Break Space',
-    ' ': 'Space'
-  };
-
-  const analysis = {
-    totalLength: text.length,
-    visibleLength: text.replace(/[​-‍ ]/g, '').length,
-    hiddenChars: 0,
-    foundChars: {} as Record<string, number>
-  };
-
-  for (const char of text) {
-    if (char in zeroWidthChars || char === '\uFFFD') {
-      analysis.hiddenChars++;
-      const name = zeroWidthChars[char as keyof typeof zeroWidthChars] || 'Replacement Character (U+FFFD)';
-      analysis.foundChars[name] = (analysis.foundChars[name] || 0) + 1;
-    }
-  }
-
-  const hasHiddenMessage = analysis.hiddenChars > 0;
-  let result = `📊 Kết quả phân tích văn bản\n\n`;
-  result += `Tổng số ký tự: ${analysis.totalLength}\n`;
-  result += `Số ký tự hiển thị: ${analysis.visibleLength}\n`;
-  result += `Số ký tự ẩn: ${analysis.hiddenChars}\n\n`;
-
-  if (hasHiddenMessage) {
-    result += `🕵️ Phát hiện ký tự ẩn:\n`;
-    for (const [char, count] of Object.entries(analysis.foundChars)) {
-      result += `• ${char}: ${count}\n`;
-    }
-
-    try {
-      const decoded = decodeZeroWidth(text);
-      if (decoded) {
-        result += `\n🔓 Tin nhắn đã giải mã: "${decoded}"`;
-      } else {
-        result += `\n❓ Tin nhắn ẩn được phát hiện nhưng không thể giải mã.`;
-      }
-    } catch (e) {
-      result += `\n❌ Không thể giải mã tin nhắn ẩn (Lỗi trong quá trình giải mã).`;
+  if (hiddenChars.length > 0) {
+    const decodedMessage = decode(text);
+    if (decodedMessage) {
+      result += `\n🔓 Tin nhắn đã giải mã: "${decodedMessage}"`;
+    } else {
+      result += `\n❓ Phát hiện ký tự ẩn nhưng không thể giải mã (có thể dữ liệu đã bị hỏng).`;
     }
   } else {
-    result += `✅ Không tìm thấy ký tự zero-width ẩn nào`;
+    result += `\n✅ Không tìm thấy tin nhắn ẩn.`;
   }
-
   return result;
 };
 
-
-
-// 🫥 Ẩn trong văn bản che phủ (không thay đổi)
-export const hideInNormalText = (secretMessage: string, simpleMode = false): string => {
-  const encoded = encodeZeroWidth(secretMessage, simpleMode);
-  const coverTexts = [
-    "Đây là một tin nhắn thông thường có chứa thông tin ẩn.",
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-    "Con cáo nâu nhanh nhẹn nhảy qua con chó lười biếng.",
-    "Chào mừng bạn đến với nền tảng giao tiếp bảo mật của chúng tôi.",
-    "Vui lòng xem lại tài liệu đính kèm để biết thêm chi tiết."
-  ];
-
-  const coverText = coverTexts[Math.floor(Math.random() * coverTexts.length)];
-  const words = coverText.split(' ');
-  const insertIndex = Math.floor(words.length / 2);
-
-  return words.slice(0, insertIndex).join(' ') +
-    encoded +
-    ' ' +
-    words.slice(insertIndex).join(' ');
+/**
+ * 🫥 ẨN TIN NHẮN VÀO VĂN BẢN CHE PHỦ
+ *
+ * @param {string} secretMessage - Tin nhắn bí mật.
+ * @param {string} coverText - Đoạn văn bản dùng để che phủ.
+ * @returns {string} - Văn bản che phủ đã chứa tin nhắn bí mật.
+ */
+export const hideInCoverText = (secretMessage: string, coverText: string): string => {
+  const encoded = encode(secretMessage);
+  
+  // Chèn vào giữa văn bản che phủ
+  const insertIndex = Math.floor(coverText.length / 2);
+  return coverText.slice(0, insertIndex) + encoded + coverText.slice(insertIndex);
 };
